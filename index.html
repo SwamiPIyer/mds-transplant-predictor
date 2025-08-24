@@ -3,714 +3,796 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MDS Allogeneic Transplant Risk Predictor</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <title>MDS Transplant Risk Predictor</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            color: #333; 
-            line-height: 1.6; 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
-        .app-container { 
-            min-height: 100vh; 
-            background: white; 
-            margin: 0 auto; 
-            max-width: 1600px; 
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
         }
         
-        .main-header { 
-            background: linear-gradient(135deg, #2c3e50, #e74c3c); 
-            color: white; 
-            padding: 30px; 
-            text-align: center; 
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
         
-        .main-header h1 { 
-            font-size: 2.5em; 
-            margin-bottom: 10px; 
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #e74c3c);
+            color: white;
+            padding: 2rem;
+            text-align: center;
         }
         
-        .main-content { 
-            padding: 30px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 30px; 
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
         }
         
-        section { 
-            background: #f8f9fa; 
-            border-radius: 15px; 
-            padding: 30px; 
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); 
+        .content {
+            padding: 2rem;
         }
         
-        section h2 { 
-            color: #2c3e50; 
-            margin-bottom: 25px; 
-            font-size: 1.8em; 
-            border-bottom: 3px solid #e74c3c; 
-            padding-bottom: 10px; 
+        .section {
+            background: #f8f9fa;
+            margin: 2rem 0;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
-        .info-grid, .donor-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); 
-            gap: 25px; 
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            border-bottom: 3px solid #e74c3c;
+            padding-bottom: 0.5rem;
         }
         
-        .info-group, .donor-group { 
-            background: white; 
-            padding: 25px; 
-            border-radius: 10px; 
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); 
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
         }
         
-        .info-group h3, .donor-group h3 { 
-            color: #34495e; 
-            margin-bottom: 20px; 
-            font-size: 1.3em; 
-            border-left: 4px solid #e74c3c; 
-            padding-left: 15px; 
+        .form-group {
+            display: flex;
+            flex-direction: column;
         }
         
-        .form-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
-            gap: 20px; 
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #555;
         }
         
-        .form-group { 
-            display: flex; 
-            flex-direction: column; 
+        .form-group input,
+        .form-group select {
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
         }
         
-        .form-group label { 
-            font-weight: 600; 
-            margin-bottom: 8px; 
-            color: #555; 
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #e74c3c;
         }
         
-        .form-group input, .form-group select { 
-            padding: 12px; 
-            border: 2px solid #ddd; 
-            border-radius: 8px; 
-            font-size: 14px; 
-            transition: border-color 0.3s ease; 
+        .form-group small {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
         }
         
-        .form-group input:focus, .form-group select:focus { 
-            outline: none; 
-            border-color: #e74c3c; 
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 0.5rem;
         }
         
-        .form-group small { 
-            color: #666; 
-            font-size: 12px; 
-            margin-top: 5px; 
-        }
-
-        .form-group input.valid { border-color: #27ae60; }
-        .form-group input.invalid { border-color: #e74c3c; }
-        
-        .validation-message {
-            color: #e74c3c;
-            font-size: 12px;
-            margin-top: 5px;
+        .btn-primary {
+            background: #e74c3c;
+            color: white;
         }
         
-        .primary-btn { 
-            background: #e74c3c; 
-            color: white; 
-            border: none; 
-            padding: 12px 24px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-weight: 600; 
-            transition: all 0.3s ease; 
+        .btn-primary:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
         }
         
-        .primary-btn:hover { 
-            background: #c0392b; 
-            transform: translateY(-2px); 
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
         }
         
-        .secondary-btn { 
-            background: #95a5a6; 
-            color: white; 
-            border: none; 
-            padding: 12px 24px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-weight: 600; 
-            transition: all 0.3s ease; 
+        .btn-secondary:hover {
+            background: #7f8c8d;
         }
         
-        .secondary-btn:hover { 
-            background: #7f8c8d; 
-            transform: translateY(-2px); 
+        .results {
+            margin-top: 2rem;
+            display: none;
         }
         
-        .assessment-controls { 
-            display: flex; 
-            gap: 15px; 
-            margin-bottom: 25px; 
-            flex-wrap: wrap; 
+        .results.show {
+            display: block;
         }
         
-        .results-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
-            gap: 25px; 
-            margin-bottom: 30px; 
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
         }
         
-        .risk-scores-card, .outcomes-card, .recommendations-card { 
-            background: white; 
-            padding: 25px; 
-            border-radius: 10px; 
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1); 
-        }
-        
-        .risk-scores-card h3, .outcomes-card h3, .recommendations-card h3 { 
-            color: #2c3e50; 
-            margin-bottom: 20px; 
-            font-size: 1.4em; 
-            border-bottom: 2px solid #e74c3c; 
-            padding-bottom: 10px; 
-        }
-        
-        .scores-list, .outcomes-list { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-        }
-        
-        .score-item, .outcome-item { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 15px; 
-            background: #f8f9fa; 
-            border-radius: 8px; 
-            border-left: 4px solid #e74c3c; 
-        }
-        
-        .score-label, .outcome-label { 
-            font-weight: 600; 
-            color: #555; 
-            flex: 1; 
-        }
-        
-        .score-value, .outcome-value { 
-            font-weight: bold; 
-            color: #2c3e50; 
-            font-size: 1.2em; 
-            margin: 0 10px; 
-        }
-        
-        .score-risk { 
-            background: #ecf0f1; 
-            color: #2c3e50; 
-            padding: 4px 8px; 
-            border-radius: 4px; 
-            font-size: 12px; 
-            font-weight: 600; 
-        }
-        
-        .score-risk.low { background: #d5f4e6; color: #27ae60; }
-        .score-risk.intermediate { background: #ffeaa7; color: #f39c12; }
-        .score-risk.high { background: #fab1a0; color: #e17055; }
-        .score-risk.very-high { background: #ff7675; color: #d63031; }
-        .score-risk.very-low { background: #a8e6cf; color: #27ae60; }
-        
-        .confidence-interval { 
-            font-size: 12px; 
-            color: #666; 
-            font-style: italic; 
-        }
-        
-        .recommendations-list { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
-        }
-        
-        .recommendation-item { 
-            padding: 12px; 
-            border-radius: 6px; 
-            border-left: 4px solid #e74c3c; 
-        }
-        
-        .recommendation-item.high-priority { 
-            background: #fff5f5; 
-            border-left-color: #e53e3e; 
-        }
-        
-        .recommendation-item.medium-priority { 
-            background: #fffbf0; 
-            border-left-color: #dd6b20; 
-        }
-        
-        .recommendation-item.low-priority { 
-            background: #f0fff4; 
-            border-left-color: #38a169; 
-        }
-        
-        .charts-section { 
-            margin-top: 30px; 
-        }
-        
-        .charts-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); 
-            gap: 25px; 
-            margin-top: 20px; 
-        }
-        
-        .chart-container { 
-            background: white; 
-            padding: 20px; 
-            border-radius: 10px; 
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1); 
-            height: 400px; 
-        }
-
-        .message {
-            padding: 15px;
+        .result-card {
+            background: white;
+            padding: 1.5rem;
             border-radius: 8px;
-            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .result-card h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #e74c3c;
+            padding-bottom: 0.5rem;
+        }
+        
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .score-value {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .risk-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .risk-low { background: #d5f4e6; color: #27ae60; }
+        .risk-intermediate { background: #ffeaa7; color: #f39c12; }
+        .risk-high { background: #fab1a0; color: #e17055; }
+        .risk-very-high { background: #ff7675; color: #d63031; }
+        .risk-very-low { background: #a8e6cf; color: #27ae60; }
+        
+        .message {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
             font-weight: 500;
         }
-
+        
         .message.success {
             background: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
         }
-
+        
         .message.error {
             background: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
-
-        .message.warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
-        }
         
         @media (max-width: 768px) {
-            .main-content { padding: 15px; }
-            .info-grid, .donor-grid { grid-template-columns: 1fr; }
-            .form-grid { grid-template-columns: 1fr; }
-            .results-grid { grid-template-columns: 1fr; }
-            .charts-grid { grid-template-columns: 1fr; }
-            .assessment-controls { flex-direction: column; }
+            .container {
+                margin: 0;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .content {
+                padding: 1rem;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <header class="main-header">
-            <h1>🏥 MDS Allogeneic Transplant Risk Predictor</h1>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 MDS Transplant Risk Predictor</h1>
             <p>Evidence-based outcome prediction for myelodysplastic syndrome patients</p>
-        </header>
+        </div>
 
-        <div class="main-content">
+        <div class="content">
             <div id="messageContainer"></div>
 
-            <!-- Patient Information Section -->
-            <section class="patient-info-section">
-                <h2>👤 Patient Characteristics</h2>
-                
-                <div class="info-grid">
-                    <div class="info-group">
-                        <h3>Demographics</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="patientAge">Age (years):</label>
-                                <input type="number" id="patientAge" min="18" max="80" required>
-                                <small>Higher age increases transplant-related mortality</small>
-                            </div>
-                            <div class="form-group">
-                                <label for="patientGender">Gender:</label>
-                                <select id="patientGender" required>
-                                    <option value="">Select Gender</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="performanceStatus">Performance Status (ECOG):</label>
-                                <select id="performanceStatus" required>
-                                    <option value="">Select Status</option>
-                                    <option value="0">0 - Fully active</option>
-                                    <option value="1">1 - Restricted in strenuous activity</option>
-                                    <option value="2">2 - Ambulatory, up >50% of time</option>
-                                    <option value="3">3 - Limited self-care, up <50% of time</option>
-                                    <option value="4">4 - Completely disabled</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="hctCi">HCT-CI Score:</label>
-                                <select id="hctCi" required>
-                                    <option value="">Select Score</option>
-                                    <option value="0">0 - No comorbidities</option>
-                                    <option value="1-2">1-2 - Mild comorbidities</option>
-                                    <option value="3-4">3-4 - Moderate comorbidities</option>
-                                    <option value="5+">≥5 - Severe comorbidities</option>
-                                </select>
-                            </div>
-                        </div>
+            <!-- Patient Information -->
+            <div class="section">
+                <h2>👤 Patient Demographics</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="age">Age (years):</label>
+                        <input type="number" id="age" min="18" max="80" required>
+                        <small>Enter patient age (18-80 years)</small>
                     </div>
-
-                    <div class="info-group">
-                        <h3>Disease Characteristics</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="mdsSubtype">MDS Subtype (WHO 2016):</label>
-                                <select id="mdsSubtype" required>
-                                    <option value="">Select Subtype</option>
-                                    <option value="mds-sld">MDS-SLD (Single lineage dysplasia)</option>
-                                    <option value="mds-mld">MDS-MLD (Multilineage dysplasia)</option>
-                                    <option value="mds-rs-sld">MDS-RS-SLD (Ring sideroblasts, single lineage)</option>
-                                    <option value="mds-rs-mld">MDS-RS-MLD (Ring sideroblasts, multilineage)</option>
-                                    <option value="mds-eb1">MDS-EB-1 (Excess blasts-1, 5-9%)</option>
-                                    <option value="mds-eb2">MDS-EB-2 (Excess blasts-2, 10-19%)</option>
-                                    <option value="mds-u">MDS-U (Unclassifiable)</option>
-                                    <option value="mds-del5q">MDS with isolated del(5q)</option>
-                                    <option value="therapy-related">Therapy-related MDS</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="blastPercentage">Bone Marrow Blasts (%):</label>
-                                <input type="number" id="blastPercentage" min="0" max="30" step="0.1" required>
-                                <small>Percentage of blasts in bone marrow</small>
-                            </div>
-                            <div class="form-group">
-                                <label for="cytogenetics">Cytogenetic Risk (IPSS-R):</label>
-                                <select id="cytogenetics" required>
-                                    <option value="">Select Risk</option>
-                                    <option value="very-good">Very Good (-Y, del(11q))</option>
-                                    <option value="good">Good (Normal, del(5q), del(12p), del(20q), double including del(5q))</option>
-                                    <option value="intermediate">Intermediate (del(7q), +8, +19, i(17q), any other single or double independent clones)</option>
-                                    <option value="poor">Poor (-7, inv(3)/t(3q)/del(3q), double including -7/del(7q), complex: 3 abnormalities)</option>
-                                    <option value="very-poor">Very Poor (Complex: >3 abnormalities)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="ipssrScore">IPSS-R Score:</label>
-                                <input type="number" id="ipssrScore" min="0" max="10" step="0.5">
-                                <small>Revised International Prognostic Scoring System</small>
-                            </div>
-                        </div>
+                    
+                    <div class="form-group">
+                        <label for="gender">Gender:</label>
+                        <select id="gender" required>
+                            <option value="">Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
                     </div>
+                    
+                    <div class="form-group">
+                        <label for="performance">Performance Status (ECOG):</label>
+                        <select id="performance" required>
+                            <option value="">Select Status</option>
+                            <option value="0">0 - Fully active</option>
+                            <option value="1">1 - Restricted in strenuous activity</option>
+                            <option value="2">2 - Ambulatory, up >50% of time</option>
+                            <option value="3">3 - Limited self-care</option>
+                            <option value="4">4 - Completely disabled</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="hctci">HCT-CI Score:</label>
+                        <select id="hctci" required>
+                            <option value="">Select Score</option>
+                            <option value="0">0 - No comorbidities</option>
+                            <option value="1-2">1-2 - Mild comorbidities</option>
+                            <option value="3-4">3-4 - Moderate comorbidities</option>
+                            <option value="5+">≥5 - Severe comorbidities</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
-                    <div class="info-group">
-                        <h3>Laboratory Parameters</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="hemoglobin">Hemoglobin (g/dL):</label>
-                                <input type="number" id="hemoglobin" min="4" max="18" step="0.1" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="platelets">Platelets (×10³/μL):</label>
-                                <input type="number" id="platelets" min="5" max="1000" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="anc">ANC (×10³/μL):</label>
-                                <input type="number" id="anc" min="0.1" max="50" step="0.1" required>
-                                <small>Absolute Neutrophil Count</small>
-                            </div>
+            <!-- Disease Characteristics -->
+            <div class="section">
+                <h2>🩺 Disease Characteristics</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="subtype">MDS Subtype:</label>
+                        <select id="subtype" required>
+                            <option value="">Select Subtype</option>
+                            <option value="mds-sld">MDS-SLD (Single lineage dysplasia)</option>
+                            <option value="mds-mld">MDS-MLD (Multilineage dysplasia)</option>
+                            <option value="mds-eb1">MDS-EB-1 (Excess blasts 5-9%)</option>
+                            <option value="mds-eb2">MDS-EB-2 (Excess blasts 10-19%)</option>
+                            <option value="therapy-related">Therapy-related MDS</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="blasts">Bone Marrow Blasts (%):</label>
+                        <input type="number" id="blasts" min="0" max="30" step="0.1" required>
+                        <small>Percentage of blasts in bone marrow (0-30%)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cytogenetics">Cytogenetic Risk:</label>
+                        <select id="cytogenetics" required>
+                            <option value="">Select Risk</option>
+                            <option value="very-good">Very Good</option>
+                            <option value="good">Good</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="poor">Poor</option>
+                            <option value="very-poor">Very Poor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="hemoglobin">Hemoglobin (g/dL):</label>
+                        <input type="number" id="hemoglobin" min="4" max="18" step="0.1" required>
+                        <small>Normal range: 12-16 g/dL</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="platelets">Platelets (×10³/μL):</label>
+                        <input type="number" id="platelets" min="5" max="1000" required>
+                        <small>Normal range: 150-450 ×10³/μL</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="anc">ANC (×10³/μL):</label>
+                        <input type="number" id="anc" min="0.1" max="50" step="0.1" required>
+                        <small>Absolute Neutrophil Count</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transplant Details -->
+            <div class="section">
+                <h2>🩸 Transplant Characteristics</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="donor">Donor Type:</label>
+                        <select id="donor" required>
+                            <option value="">Select Donor</option>
+                            <option value="sibling">HLA-matched sibling</option>
+                            <option value="mud">Matched unrelated donor (MUD)</option>
+                            <option value="mmud">Mismatched unrelated donor</option>
+                            <option value="haplo">Haploidentical</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="hla">HLA Matching:</label>
+                        <select id="hla" required>
+                            <option value="">Select Matching</option>
+                            <option value="10/10">10/10 (Perfect match)</option>
+                            <option value="9/10">9/10 (Single mismatch)</option>
+                            <option value="8/10">8/10 (Two mismatches)</option>
+                            <option value="haplo">Haploidentical (≤6/10)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="conditioning">Conditioning Intensity:</label>
+                        <select id="conditioning" required>
+                            <option value="">Select Intensity</option>
+                            <option value="mac">Myeloablative (MAC)</option>
+                            <option value="ric">Reduced Intensity (RIC)</option>
+                            <option value="nma">Non-myeloablative (NMA)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="gvhd">GVHD Prophylaxis:</label>
+                        <select id="gvhd" required>
+                            <option value="">Select Prophylaxis</option>
+                            <option value="csa-mtx">Cyclosporine + Methotrexate</option>
+                            <option value="tacro-mtx">Tacrolimus + Methotrexate</option>
+                            <option value="tacro-mmf">Tacrolimus + MMF</option>
+                            <option value="ptcy">Post-transplant Cyclophosphamide</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calculate Button -->
+            <div class="section">
+                <h2>📊 Risk Assessment</h2>
+                <button id="calculateBtn" class="btn btn-primary">🔄 Calculate Risk Scores</button>
+                <button id="exportBtn" class="btn btn-secondary">📄 Export Report</button>
+            </div>
+
+            <!-- Results -->
+            <div id="results" class="results">
+                <div class="section">
+                    <h2>📊 Risk Scores & Outcomes</h2>
+                    <div class="results-grid">
+                        <div class="result-card">
+                            <h3>Risk Scores</h3>
+                            <div id="riskScores"></div>
+                        </div>
+                        
+                        <div class="result-card">
+                            <h3>Predicted 2-Year Outcomes</h3>
+                            <div id="outcomes"></div>
+                        </div>
+                        
+                        <div class="result-card">
+                            <h3>Clinical Recommendations</h3>
+                            <div id="recommendations"></div>
                         </div>
                     </div>
                 </div>
-            </section>
-
-            <!-- Donor and Treatment Section -->
-            <section class="donor-treatment-section">
-                <h2>🩸 Donor and Treatment Characteristics</h2>
-                
-                <div class="donor-grid">
-                    <div class="donor-group">
-                        <h3>Donor Selection</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="donorType">Donor Type:</label>
-                                <select id="donorType" required>
-                                    <option value="">Select Donor Type</option>
-                                    <option value="sibling">HLA-matched sibling</option>
-                                    <option value="mud">Matched unrelated donor (MUD)</option>
-                                    <option value="mmud">Mismatched unrelated donor (MMUD)</option>
-                                    <option value="haplo">Haploidentical</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="hlaMatching">HLA Matching:</label>
-                                <select id="hlaMatching" required>
-                                    <option value="">Select Matching</option>
-                                    <option value="10/10">10/10 (HLA-A, B, C, DRB1, DQB1)</option>
-                                    <option value="9/10">9/10 (Single antigen mismatch)</option>
-                                    <option value="8/10">8/10 (Single allele mismatch)</option>
-                                    <option value="7/10">7/10 (Two mismatches)</option>
-                                    <option value="haplo">Haploidentical (≤6/10)</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="donor-group">
-                        <h3>Transplant Protocol</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="conditioningIntensity">Conditioning Intensity:</label>
-                                <select id="conditioningIntensity" required>
-                                    <option value="">Select Intensity</option>
-                                    <option value="mac">Myeloablative (MAC)</option>
-                                    <option value="ric">Reduced Intensity (RIC)</option>
-                                    <option value="nma">Non-myeloablative (NMA)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="conditioningRegimen">Conditioning Regimen:</label>
-                                <select id="conditioningRegimen" required>
-                                    <option value="">Select Regimen</option>
-                                    <option value="bu-cy">Busulfan + Cyclophosphamide</option>
-                                    <option value="bu-flu">Busulfan + Fludarabine</option>
-                                    <option value="cy-tbi">Cyclophosphamide + TBI</option>
-                                    <option value="flu-bu">Fludarabine + Busulfan (RIC)</option>
-                                    <option value="flu-mel">Fludarabine + Melphalan</option>
-                                    <option value="flu-cy-tbi">Fludarabine + Cyclophosphamide + TBI (NMA)</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="gvhdProphylaxis">GVHD Prophylaxis:</label>
-                                <select id="gvhdProphylaxis" required>
-                                    <option value="">Select Prophylaxis</option>
-                                    <option value="csa-mtx">Cyclosporine + Methotrexate</option>
-                                    <option value="tacro-mtx">Tacrolimus + Methotrexate</option>
-                                    <option value="tacro-mmf">Tacrolimus + MMF</option>
-                                    <option value="ptcy">Post-transplant Cyclophosphamide</option>
-                                    <option value="ptcy-tacro-mmf">PTCy + Tacrolimus + MMF</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="stemCellSource">Stem Cell Source:</label>
-                                <select id="stemCellSource" required>
-                                    <option value="">Select Source</option>
-                                    <option value="pbsc">Peripheral Blood (PBSC)</option>
-                                    <option value="bm">Bone Marrow</option>
-                                    <option value="cb">Cord Blood</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Risk Assessment Results -->
-            <section class="risk-assessment-section">
-                <h2>📊 Risk Assessment & Outcomes Prediction</h2>
-                
-                <div class="assessment-controls">
-                    <button id="calculateRisk" class="primary-btn">Calculate Risk Scores</button>
-                    <button id="compareScenarios" class="secondary-btn">Compare Donor Types</button>
-                    <button id="exportReport" class="secondary-btn">Export Report</button>
-                </div>
-
-                <div class="results-grid">
-                    <div class="risk-scores-card">
-                        <h3>Risk Scores</h3>
-                        <div class="scores-list">
-                            <div class="score-item">
-                                <span class="score-label">HCT-CI Score:</span>
-                                <span id="hctCiResult" class="score-value">-</span>
-                                <span id="hctCiRisk" class="score-risk">-</span>
-                            </div>
-                            <div class="score-item">
-                                <span class="score-label">IPSS-R Risk:</span>
-                                <span id="ipssrResult" class="score-value">-</span>
-                                <span id="ipssrRisk" class="score-risk">-</span>
-                            </div>
-                            <div class="score-item">
-                                <span class="score-label">Disease Risk Index:</span>
-                                <span id="driResult" class="score-value">-</span>
-                                <span id="driRisk" class="score-risk">-</span>
-                            </div>
-                            <div class="score-item">
-                                <span class="score-label">Transplant Risk Index:</span>
-                                <span id="triResult" class="score-value">-</span>
-                                <span id="triRisk" class="score-risk">-</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="outcomes-card">
-                        <h3>Predicted Outcomes (2-year)</h3>
-                        <div class="outcomes-list">
-                            <div class="outcome-item">
-                                <span class="outcome-label">Overall Survival:</span>
-                                <span id="osResult" class="outcome-value">-</span>
-                                <div class="confidence-interval" id="osCI">-</div>
-                            </div>
-                            <div class="outcome-item">
-                                <span class="outcome-label">Disease-Free Survival:</span>
-                                <span id="dfsResult" class="outcome-value">-</span>
-                                <div class="confidence-interval" id="dfsCI">-</div>
-                            </div>
-                            <div class="outcome-item">
-                                <span class="outcome-label">Non-Relapse Mortality:</span>
-                                <span id="nrmResult" class="outcome-value">-</span>
-                                <div class="confidence-interval" id="nrmCI">-</div>
-                            </div>
-                            <div class="outcome-item">
-                                <span class="outcome-label">Relapse Rate:</span>
-                                <span id="relapseResult" class="outcome-value">-</span>
-                                <div class="confidence-interval" id="relapseCI">-</div>
-                            </div>
-                            <div class="outcome-item">
-                                <span class="outcome-label">Acute GVHD (II-IV):</span>
-                                <span id="aGvhdResult" class="outcome-value">-</span>
-                                <div class="confidence-interval" id="aGvhdCI">-</div>
-                            </div>
-                            <div class="outcome-item">
-                                <span class="outcome-label">Chronic GVHD:</span>
-                                <span id="cGvhdResult" class="outcome-value">-</span>
-                                <div class="confidence-interval" id="cGvhdCI">-</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="recommendations-card">
-                        <h3>Clinical Recommendations</h3>
-                        <div id="recommendations" class="recommendations-list">
-                            <p>Please calculate risk scores to view recommendations.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Survival Curves -->
-                <div class="charts-section">
-                    <h3>Predicted Survival Curves</h3>
-                    <div class="charts-grid">
-                        <div class="chart-container">
-                            <canvas id="survivalChart"></canvas>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="outcomeChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            </div>
         </div>
     </div>
 
     <script>
-        class MDSTransplantPredictor {
+        class MDSPredictor {
             constructor() {
-                this.patientData = {};
-                this.riskScores = {};
+                this.data = {};
+                this.scores = {};
                 this.outcomes = {};
-                this.charts = {};
+                this.init();
+            }
+
+            init() {
+                document.getElementById('calculateBtn').addEventListener('click', () => {
+                    this.calculate();
+                });
                 
-                this.initialize();
-            }
-
-            initialize() {
-                this.setupEventListeners();
-                this.initializeValidation();
-            }
-
-            setupEventListeners() {
-                // Calculate risk button
-                document.getElementById('calculateRisk').addEventListener('click', () => {
-                    this.calculateAllRiskScores();
-                });
-
-                // Compare scenarios button
-                document.getElementById('compareScenarios').addEventListener('click', () => {
-                    this.compareScenarios();
-                });
-
-                // Export report button
-                document.getElementById('exportReport').addEventListener('click', () => {
+                document.getElementById('exportBtn').addEventListener('click', () => {
                     this.exportReport();
                 });
-
-                // Form validation on input change
-                this.setupFormValidation();
+                
+                console.log('MDS Predictor initialized successfully!');
             }
 
-            setupFormValidation() {
-                const inputs = document.querySelectorAll('input, select');
-                inputs.forEach(input => {
-                    input.addEventListener('change', () => {
-                        this.validateInput(input);
-                        this.updatePatientData();
-                    });
-                });
+            getData() {
+                this.data = {
+                    age: parseInt(document.getElementById('age').value) || 0,
+                    gender: document.getElementById('gender').value,
+                    performance: parseInt(document.getElementById('performance').value) || 0,
+                    hctci: document.getElementById('hctci').value,
+                    subtype: document.getElementById('subtype').value,
+                    blasts: parseFloat(document.getElementById('blasts').value) || 0,
+                    cytogenetics: document.getElementById('cytogenetics').value,
+                    hemoglobin: parseFloat(document.getElementById('hemoglobin').value) || 0,
+                    platelets: parseInt(document.getElementById('platelets').value) || 0,
+                    anc: parseFloat(document.getElementById('anc').value) || 0,
+                    donor: document.getElementById('donor').value,
+                    hla: document.getElementById('hla').value,
+                    conditioning: document.getElementById('conditioning').value,
+                    gvhd: document.getElementById('gvhd').value
+                };
             }
 
-            validateInput(input) {
-                const value = input.value;
-                const id = input.id;
+            validate() {
+                this.getData();
                 
-                // Remove existing validation classes
-                input.classList.remove('valid', 'invalid');
+                const required = ['age', 'gender', 'performance', 'hctci', 'subtype', 'blasts', 
+                                'cytogenetics', 'hemoglobin', 'platelets', 'anc', 'donor', 
+                                'hla', 'conditioning', 'gvhd'];
                 
-                // Basic validation
-                if (input.required && !value) {
-                    input.classList.add('invalid');
+                for (let field of required) {
+                    if (!this.data[field] && this.data[field] !== 0) {
+                        this.showMessage(`Please fill in ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`, 'error');
+                        return false;
+                    }
+                }
+                
+                if (this.data.age < 18 || this.data.age > 80) {
+                    this.showMessage('Age must be between 18-80 years', 'error');
                     return false;
                 }
                 
-                // Specific validations
-                switch (id) {
-                    case 'patientAge':
-                        if (value < 18 || value > 80) {
-                            this.showValidationMessage(input, 'Age should be between 18-80 years');
-                            input.classList.add('invalid');
-                            return false;
-                        }
-                        break;
-                    case 'blastPercentage':
-                        if (value < 0 || value > 30) {
-                            this.showValidationMessage(input, 'Blast percentage should be 0-30% for MDS');
-                            input.classList.add('invalid');
-                            return false;
-                        }
-                        break;
-                    case 'hemoglobin':
-                        if (value < 4 || value > 18) {
-                            this.showValidationMessage(input, 'Hemoglobin should be 4-18 g/dL');
-                            input.classList.add('invalid');
-                            return false;
-                        }
-                        break;
+                if (this.data.blasts < 0 || this.data.blasts > 30) {
+                    this.showMessage('Blast percentage must be 0-30%', 'error');
+                    return false;
                 }
                 
-                input.classList.add('valid');
                 return true;
             }
 
-            showValidationMessage(input, message) {
-                // Remove existing message
-                const existingMessage = input.parentNode.querySelector('.validation-message');
-                if (existingMessage) {
-                    existingMessage.remove();
+            calculate() {
+                if (!this.validate()) return;
+                
+                this.calculateScores();
+                this.calculateOutcomes();
+                this.displayResults();
+                this.showMessage('Risk assessment completed successfully!', 'success');
+            }
+
+            calculateScores() {
+                // HCT-CI Score
+                let hctciScore = 0;
+                if (this.data.age >= 60) hctciScore += 1;
+                if (this.data.performance >= 2) hctciScore += 1;
+                
+                switch (this.data.hctci) {
+                    case '1-2': hctciScore += 2; break;
+                    case '3-4': hctciScore += 4; break;
+                    case '5+': hctciScore += 6; break;
                 }
                 
-                // Add new message
-                const messageElement = document.createElement('div');
-                messageElement.className = 'validation-message';
-                messageElement.textContent = message;
-                input
+                // IPSS-R Score (simplified)
+                let ipssrScore = 0;
+                const cytoScore = {
+                    'very-good': 0, 'good': 1, 'intermediate': 2, 
+                    'poor': 3, 'very-poor': 4
+                };
+                ipssrScore += cytoScore[this.data.cytogenetics] || 1;
+                
+                if (this.data.blasts >= 15) ipssrScore += 3;
+                else if (this.data.blasts >= 10) ipssrScore += 2;
+                else if (this.data.blasts >= 5) ipssrScore += 1;
+                
+                if (this.data.hemoglobin < 8) ipssrScore += 1.5;
+                else if (this.data.hemoglobin < 10) ipssrScore += 1;
+                
+                if (this.data.platelets < 50) ipssrScore += 1;
+                if (this.data.anc < 0.8) ipssrScore += 0.5;
+                
+                // Disease Risk Index
+                let driRisk = 'Intermediate';
+                if (this.data.cytogenetics === 'very-poor' || 
+                    this.data.blasts >= 15 || 
+                    this.data.subtype === 'therapy-related') {
+                    driRisk = 'High';
+                } else if (this.data.cytogenetics === 'very-good' && this.data.blasts < 5) {
+                    driRisk = 'Low';
+                }
+                
+                this.scores = {
+                    hctci: { score: hctciScore, risk: this.getRiskLevel(hctciScore, 'hctci') },
+                    ipssr: { score: ipssrScore, risk: this.getRiskLevel(ipssrScore, 'ipssr') },
+                    dri: { risk: driRisk }
+                };
+            }
+
+            getRiskLevel(score, type) {
+                if (type === 'hctci') {
+                    if (score <= 2) return 'Low';
+                    if (score <= 4) return 'Intermediate';
+                    if (score <= 6) return 'High';
+                    return 'Very High';
+                }
+                
+                if (type === 'ipssr') {
+                    if (score <= 1.5) return 'Very Low';
+                    if (score <= 3) return 'Low';
+                    if (score <= 4.5) return 'Intermediate';
+                    if (score <= 6) return 'High';
+                    return 'Very High';
+                }
+                
+                return 'Intermediate';
+            }
+
+            calculateOutcomes() {
+                // Base outcomes by donor type
+                const baseOutcomes = {
+                    sibling: { os: 65, dfs: 55, nrm: 25, relapse: 20, agvhd: 25, cgvhd: 45 },
+                    mud: { os: 55, dfs: 45, nrm: 35, relapse: 20, agvhd: 35, cgvhd: 55 },
+                    mmud: { os: 45, dfs: 35, nrm: 45, relapse: 20, agvhd: 45, cgvhd: 65 },
+                    haplo: { os: 50, dfs: 40, nrm: 40, relapse: 20, agvhd: 30, cgvhd: 35 }
+                };
+                
+                const base = baseOutcomes[this.data.donor] || baseOutcomes.mud;
+                
+                // Apply risk adjustments
+                this.outcomes = {};
+                for (let [key, value] of Object.entries(base)) {
+                    let adjusted = value;
+                    
+                    // Age adjustment
+                    if (this.data.age >= 65) {
+                        adjusted *= (key === 'os' || key === 'dfs') ? 0.85 : 1.2;
+                    }
+                    
+                    // Disease risk adjustment
+                    if (this.scores.dri.risk === 'High') {
+                        if (key === 'relapse') adjusted *= 1.5;
+                        if (key === 'os' || key === 'dfs') adjusted *= 0.8;
+                    }
+                    
+                    // HCT-CI adjustment
+                    if (this.scores.hctci.risk === 'High' || this.scores.hctci.risk === 'Very High') {
+                        if (key === 'nrm') adjusted *= 1.4;
+                        if (key === 'os' || key === 'dfs') adjusted *= 0.8;
+                    }
+                    
+                    // Conditioning adjustment
+                    if (this.data.conditioning === 'ric') {
+                        if (key === 'nrm') adjusted *= 0.8;
+                        if (key === 'relapse') adjusted *= 1.2;
+                    }
+                    
+                    // GVHD prophylaxis adjustment
+                    if (this.data.gvhd.includes('ptcy')) {
+                        if (key === 'agvhd' || key === 'cgvhd') adjusted *= 0.7;
+                    }
+                    
+                    this.outcomes[key] = Math.max(5, Math.min(95, Math.round(adjusted)));
+                }
+            }
+
+            displayResults() {
+                // Risk Scores
+                const riskHtml = `
+                    <div class="score-item">
+                        <span>HCT-CI Score:</span>
+                        <span class="score-value">${this.scores.hctci.score}</span>
+                        <span class="risk-badge risk-${this.scores.hctci.risk.toLowerCase().replace(' ', '-')}">${this.scores.hctci.risk}</span>
+                    </div>
+                    <div class="score-item">
+                        <span>IPSS-R Score:</span>
+                        <span class="score-value">${this.scores.ipssr.score.toFixed(1)}</span>
+                        <span class="risk-badge risk-${this.scores.ipssr.risk.toLowerCase().replace(' ', '-')}">${this.scores.ipssr.risk}</span>
+                    </div>
+                    <div class="score-item">
+                        <span>Disease Risk Index:</span>
+                        <span class="score-value">-</span>
+                        <span class="risk-badge risk-${this.scores.dri.risk.toLowerCase()}">${this.scores.dri.risk}</span>
+                    </div>
+                `;
+                document.getElementById('riskScores').innerHTML = riskHtml;
+                
+                // Outcomes
+                const outcomeNames = {
+                    os: 'Overall Survival',
+                    dfs: 'Disease-Free Survival', 
+                    nrm: 'Non-Relapse Mortality',
+                    relapse: 'Relapse Rate',
+                    agvhd: 'Acute GVHD (II-IV)',
+                    cgvhd: 'Chronic GVHD'
+                };
+                
+                let outcomeHtml = '';
+                for (let [key, value] of Object.entries(this.outcomes)) {
+                    outcomeHtml += `
+                        <div class="score-item">
+                            <span>${outcomeNames[key]}:</span>
+                            <span class="score-value">${value}%</span>
+                            <span style="font-size: 0.8em; color: #666;">95% CI: ${value-10}%-${value+10}%</span>
+                        </div>
+                    `;
+                }
+                document.getElementById('outcomes').innerHTML = outcomeHtml;
+                
+                // Recommendations
+                const recommendations = this.generateRecommendations();
+                document.getElementById('recommendations').innerHTML = recommendations;
+                
+                // Show results
+                document.getElementById('results').classList.add('show');
+                document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+            }
+
+            generateRecommendations() {
+                let recs = [];
+                
+                if (this.data.age >= 65) {
+                    recs.push('• Consider reduced intensity conditioning given advanced age');
+                }
+                
+                if (this.scores.hctci.risk === 'High' || this.scores.hctci.risk === 'Very High') {
+                    recs.push('• High comorbidity burden - pre-transplant optimization recommended');
+                    recs.push('• Consider reduced intensity conditioning to minimize non-relapse mortality');
+                }
+                
+                if (this.scores.dri.risk === 'High') {
+                    recs.push('• High disease risk - consider myeloablative conditioning if feasible');
+                    recs.push('• Close monitoring for disease relapse post-transplant');
+                }
+                
+                if (this.data.gvhd.includes('ptcy')) {
+                    recs.push('• Post-transplant cyclophosphamide may reduce GVHD risk');
+                }
+                
+                if (this.data.donor === 'haplo') {
+                    recs.push('• Haploidentical transplant - ensure adequate stem cell dose');
+                }
+                
+                if (recs.length === 0) {
+                    recs.push('• No specific high-risk factors identified');
+                    recs.push('• Standard transplant protocols recommended');
+                }
+                
+                return recs.join('<br>');
+            }
+
+            exportReport() {
+                if (!this.scores.hctci) {
+                    this.showMessage('Please calculate risk scores first', 'error');
+                    return;
+                }
+                
+                const date = new Date().toLocaleDateString();
+                const report = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>MDS Risk Assessment Report</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 40px; }
+                        .header { text-align: center; margin-bottom: 30px; }
+                        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>MDS Transplant Risk Assessment</h1>
+                        <p>Generated: ${date}</p>
+                    </div>
+                    
+                    <h2>Patient Information</h2>
+                    <p><strong>Age:</strong> ${this.data.age} years</p>
+                    <p><strong>Gender:</strong> ${this.data.gender}</p>
+                    <p><strong>Performance Status:</strong> ECOG ${this.data.performance}</p>
+                    
+                    <h2>Risk Scores</h2>
+                    <table>
+                        <tr><th>Score</th><th>Value</th><th>Risk Level</th></tr>
+                        <tr><td>HCT-CI</td><td>${this.scores.hctci.score}</td><td>${this.scores.hctci.risk}</td></tr>
+                        <tr><td>IPSS-R</td><td>${this.scores.ipssr.score.toFixed(1)}</td><td>${this.scores.ipssr.risk}</td></tr>
+                        <tr><td>Disease Risk Index</td><td>-</td><td>${this.scores.dri.risk}</td></tr>
+                    </table>
+                    
+                    <h2>Predicted 2-Year Outcomes</h2>
+                    <table>
+                        <tr><th>Outcome</th><th>Predicted Rate</th></tr>
+                        <tr><td>Overall Survival</td><td>${this.outcomes.os}%</td></tr>
+                        <tr><td>Disease-Free Survival</td><td>${this.outcomes.dfs}%</td></tr>
+                        <tr><td>Non-Relapse Mortality</td><td>${this.outcomes.nrm}%</td></tr>
+                        <tr><td>Relapse Rate</td><td>${this.outcomes.relapse}%</td></tr>
+                        <tr><td>Acute GVHD (II-IV)</td><td>${this.outcomes.agvhd}%</td></tr>
+                        <tr><td>Chronic GVHD</td><td>${this.outcomes.cgvhd}%</td></tr>
+                    </table>
+                    
+                    <h2>Clinical Recommendations</h2>
+                    <div>${this.generateRecommendations()}</div>
+                    
+                    <p><em>This assessment is for educational purposes only. Consult healthcare professionals for treatment decisions.</em></p>
+                </body>
+                </html>`;
+                
+                const blob = new Blob([report], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `mds-risk-report-${date.replace(/\//g, '-')}.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.showMessage('Report exported successfully!', 'success');
+            }
+
+            showMessage(text, type) {
+                const container = document.getElementById('messageContainer');
+                const message = document.createElement('div');
+                message.className = `message ${type}`;
+                message.textContent = text;
+                
+                container.innerHTML = '';
+                container.appendChild(message);
+                
+                setTimeout(() => {
+                    if (message.parentNode) {
+                        message.parentNode.removeChild(message);
+                    }
+                }, 5000);
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing MDS Predictor...');
+            const predictor = new MDSPredictor();
+            
+            // Test message to confirm it's working
+            setTimeout(() => {
+                predictor.showMessage('MDS Predictor loaded successfully! Fill in the form and click Calculate.', 'success');
+            }, 1000);
+        });
+
+        // Fallback initialization
+        window.onload = function() {
+            if (!window.mdsPredictor) {
+                console.log('Fallback initialization...');
+                window.mdsPredictor = new MDSPredictor();
+            }
+        };
+    </script>
+</body>
+</html>
